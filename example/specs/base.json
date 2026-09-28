@@ -68,7 +68,7 @@
       ],
       "bullets": [
         {
-          "text": "Resolved 60+ Zendesk tickets a day across order, billing, and delivery issues while keeping CSAT above 94%.",
+          "text": "Resolved 60+ Zendesk tickets a day across orders, billing, and delivery with CSAT above 94%.",
           "evidence": [
             "experience.brightcart_tickets"
           ]
@@ -184,7 +184,7 @@
       "school": "University of Illinois Chicago",
       "location": "Chicago, IL",
       "date": "May 2021",
-      "detail": "Minor: Statistics | Coursework: Database Management, Business Analytics, Supply Chain Operations, Data Visualization",
+      "detail": "Minor: Statistics | Coursework: Database Management, Business Analytics, Supply Chain Operations",
       "evidence": [
         "education.uic_bs",
         "education.uic_minor_coursework"

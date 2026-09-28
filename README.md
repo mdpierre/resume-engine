@@ -13,7 +13,9 @@ output/2026-10-01-acme-operations-analyst/
   resume-validation.json
 ```
 
-See `example/` for a complete fictional profile (Jordan Rivera) and what it renders.
+The bundled example (a fictional profile, in `example/`) renders like this:
+
+<img src="docs/example-resume.png" alt="Example one-page resume generated from the fictional Jordan Rivera profile" width="600">
 
 ## Setup (once)
 
@@ -120,5 +122,10 @@ RESUME_ARTIFACT_DIR="output/<dir>" .venv/bin/python -m unittest -v tests/test_en
 | `resume_factory.py` | Evidence validation and DOCX layout |
 | `resume_checks.py` | PDF geometry, page count, fill, overflow, section order |
 | `example/` | Fictional profile, facts, and spec |
+| `docs/example-resume.png` | Render of the example |
 | `.claude/skills/` | `resume-setup` and `tailor-resume` agent workflows |
 | `AGENTS.md` | Instructions for any coding agent working in this repo |
+
+## License
+
+MIT
