@@ -1,0 +1,89 @@
+{
+  "canonical_profile": "PROFILE.md",
+  "style": {
+    "font": "Arial",
+    "accent": "1A56DB"
+  },
+  "facts": {
+    "positioning.ops_analyst": {
+      "source": "PROFILE.md#Positioning",
+      "note": "Operations analyst who turns spreadsheets and manual handoffs into reporting and workflow systems; logistics, customer ops, dashboards"
+    },
+    "experience.lakeshore_dashboard": {
+      "source": "PROFILE.md#Experience",
+      "note": "Rebuilt weekly carrier-performance report from 4 spreadsheets into SQL-backed Looker dashboard; prep ~6h -> <1h per week"
+    },
+    "experience.lakeshore_claims": {
+      "source": "PROFILE.md#Experience",
+      "note": "Mapped damaged-shipment claims process with CS and finance; avg resolution 14 -> 9 days"
+    },
+    "experience.lakeshore_data_quality": {
+      "source": "PROFILE.md#Experience",
+      "note": "Owns data quality checks for 2,000+ weekly shipments; flags anomalies to dispatch leads"
+    },
+    "experience.lakeshore_training": {
+      "source": "PROFILE.md#Experience",
+      "note": "Trained 12 dispatchers on the dashboard; wrote internal how-to"
+    },
+    "experience.brightcart_tickets": {
+      "source": "PROFILE.md#Experience",
+      "note": "60+ Zendesk tickets/day across order, billing, delivery; CSAT above 94%"
+    },
+    "experience.brightcart_macros": {
+      "source": "PROFILE.md#Experience",
+      "note": "Built 40+ saved-reply macro library adopted as team standard"
+    },
+    "experience.brightcart_drivers": {
+      "source": "PROFILE.md#Experience",
+      "note": "Monthly ticket-driver tagging; top-three driver report fed product roadmap reviews"
+    },
+    "experience.uic_scheduling": {
+      "source": "PROFILE.md#Experience",
+      "note": "Scheduled 15 student workers across 3 service desks per semester"
+    },
+    "experience.uic_equipment": {
+      "source": "PROFILE.md#Experience",
+      "note": "Tracked 300+ laptop and hotspot loans during remote learning"
+    },
+    "leadership.dsc_treasurer": {
+      "source": "PROFILE.md#Leadership",
+      "note": "Treasurer, UIC Data Science Club: $12K annual budget, reimbursement for 20+ events"
+    },
+    "project.transit_tracker": {
+      "source": "PROFILE.md#Projects",
+      "note": "CTA arrival data every 5 min, delay patterns by line/hour; Python, pandas, SQLite, Streamlit"
+    },
+    "project.food_pantry": {
+      "source": "PROFILE.md#Projects",
+      "note": "Replaced paper intake log with Google Sheets inventory + reorder alert used by 8 volunteers"
+    },
+    "skills.data": {
+      "source": "PROFILE.md#Skills",
+      "note": "SQL, Excel (pivots, XLOOKUP, Power Query), Looker, Tableau, Python (pandas)"
+    },
+    "skills.operations": {
+      "source": "PROFILE.md#Skills",
+      "note": "Process mapping, SOP writing, KPI reporting, vendor coordination, training"
+    },
+    "skills.tools": {
+      "source": "PROFILE.md#Skills",
+      "note": "Zendesk, Jira, Asana, Google Workspace, Microsoft 365, Slack"
+    },
+    "education.uic_bs": {
+      "source": "PROFILE.md#Education",
+      "note": "BS Information and Decision Sciences, UIC, May 2021"
+    },
+    "education.uic_minor_coursework": {
+      "source": "PROFILE.md#Education",
+      "note": "Minor Statistics; coursework Database Mgmt, Business Analytics, Supply Chain Ops, Data Viz"
+    },
+    "experience.lakeshore_carrier_reviews": {
+      "source": "PROFILE.md#Experience",
+      "note": "Runs weekly performance reviews with 8 regional carriers using the dashboard"
+    },
+    "skills.certifications": {
+      "source": "PROFILE.md#Skills",
+      "note": "Google Data Analytics Professional Certificate (2022), Lean Six Sigma Yellow Belt (2023)"
+    }
+  }
+}

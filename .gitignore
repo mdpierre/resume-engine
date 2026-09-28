@@ -1,0 +1,10 @@
+# Your personal resume data and generated resumes stay local by default.
+# Delete these lines in your own private fork if you want them versioned.
+data/
+output/
+
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+.DS_Store
