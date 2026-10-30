@@ -103,14 +103,69 @@ Optional look-and-feel, in `resume_facts.json` (or per spec):
 - Every summary, role, bullet, project, skill line, and education entry cites at least one known fact ID.
 - No em or en dashes (use plain hyphens). They're a common tell of generated text and some ATS parsers mangle them.
 - Exactly one Letter page, 95-97% filled, nothing past the 0.5" margins, body text 10 pt or larger.
-- Contact, then Experience, then Skills, in that order.
+- Contact first, then every section heading in the spec's resolved layout order (see [Section layout](#section-layout)).
 
 The rules the agent follows on top of that (real job titles only, no invented numbers or outcomes, a content budget that fits one page) are in `.claude/skills/tailor-resume/SKILL.md`.
+
+## Section layout
+
+By default a resume renders Profile, Role Alignment, Experience, Leadership, Projects, Skills & Tools, Education, and skips any optional section (alignment, leadership, projects, skills) the spec leaves empty. Three optional spec fields change that.
+
+**`section_order`** lists section IDs top to bottom. Built-in IDs: `summary`, `alignment`, `experience`, `leadership`, `projects`, `skills`, `education`. An explicit order must include `experience`, `education`, every custom section, and `skills` if the spec has a nonempty `skills` block. Unknown or duplicate IDs fail validation. You can leave `summary` out, and then the spec doesn't need `summary` or `summary_evidence`. Without `section_order`, custom sections go after skills and before education.
+
+**`section_titles`** renames headings by section ID (built-in or custom). Headings render in uppercase. Unknown keys and blank titles fail validation.
+
+**`sections`** adds custom sections. Each one has:
+
+- `id`: unique slug matching `[a-z0-9_-]+`; it can't reuse a built-in ID
+- `title`: the heading
+- `type`: one of
+  - `bullets`: items are `{text, evidence}`, rendered as bullets
+  - `skills-list`: items are `{label, items, evidence}`, rendered like the Skills lines
+  - `entries`: items are `{title, organization?, location?, dates?, evidence, bullets?}`, rendered like Experience; each bullet is `{text, evidence}`
+- `items`: a nonempty list
+
+Every item and nested bullet must cite at least one known fact ID, the same as the rest of the spec.
+
+These fields can go into `example/specs/base.json` as-is:
+
+```json
+{
+  "section_order": ["summary", "skills", "experience", "highlights", "volunteering", "projects", "education"],
+  "section_titles": {"experience": "Relevant Experience"},
+  "sections": [
+    {
+      "id": "highlights", "title": "Highlights", "type": "bullets",
+      "items": [{"text": "Cut weekly report prep from about 6 hours to under 1.", "evidence": ["experience.lakeshore_dashboard"]}]
+    },
+    {
+      "id": "volunteering", "title": "Volunteering", "type": "entries",
+      "items": [{
+        "title": "Inventory Volunteer", "organization": "Neighborhood Food Pantry", "location": "Chicago, IL",
+        "evidence": ["project.food_pantry"],
+        "bullets": [{"text": "Built a Google Sheets inventory and reorder alert used by 8 volunteers.", "evidence": ["project.food_pantry"]}]
+      }]
+    }
+  ]
+}
+```
+
+That order leaves out `alignment` and `leadership`, which is allowed because they're optional. `example/specs/education-first.json` is a complete spec that puts Education and Skills first and has no Profile section.
+
+The build checks the rendered PDF against the resolved headings, so renamed and reordered sections pass the section-order check.
+
+### Adding a section type
+
+1. In `resume_factory.py`, write a renderer `(doc, style, section)` that emits the heading with `_section(doc, style, section["title"])` and then the content. Reuse `_bullet`, `_skill_lines`, or `_render_items` where you can.
+2. Write a validator `(section)` that checks the items and requires evidence on each one. Raise `ValueError` with paths like `sections[<id>].items[0]`. `_custom_items` and `_validate_item` handle the common cases.
+3. Register the pair in `SECTION_TYPES`.
+4. If items can hold nested lists of cited things, make sure `_all_evidence_ids` collects them, so unknown IDs are rejected.
+5. Add coverage to `tests/test_sections.py`.
 
 ## Tests
 
 ```bash
-.venv/bin/python -m unittest -v tests/test_engine.py
+.venv/bin/python -m unittest -v tests/test_engine.py tests/test_sections.py
 RESUME_ARTIFACT_DIR="output/<dir>" .venv/bin/python -m unittest -v tests/test_engine.py
 ```
 
@@ -121,7 +176,7 @@ RESUME_ARTIFACT_DIR="output/<dir>" .venv/bin/python -m unittest -v tests/test_en
 | `resume.py` | CLI: `init`, `validate`, `build` (the fit loop) |
 | `resume_factory.py` | Evidence validation and DOCX layout |
 | `resume_checks.py` | PDF geometry, page count, fill, overflow, section order |
-| `example/` | Fictional profile, facts, and spec |
+| `example/` | Fictional profile, facts, and specs (`base`, `education-first`) |
 | `docs/example-resume.png` | Render of the example |
 | `.claude/skills/` | `resume-setup` and `tailor-resume` agent workflows |
 | `AGENTS.md` | Instructions for any coding agent working in this repo |

@@ -25,7 +25,7 @@ from dataclasses import replace
 from pathlib import Path
 
 import resume_checks as rc
-from resume_factory import ResumeInputs, build_and_save, load_inputs
+from resume_factory import ResumeInputs, build_and_save, load_inputs, section_headings
 
 ROOT = Path(__file__).resolve().parent
 EXAMPLE_DIR = ROOT / "example"
@@ -71,6 +71,7 @@ def search(inputs, work, reference, *, fill_min, fill_max, ideal, min_body_pt) -
     body_sizes = [s for s in (10.5, 10.25, 10.0, 10.75, 11.0) if s >= min_body_pt]
     best: dict | None = None
     iteration = 0
+    headings = section_headings(inputs.spec)
 
     for body_pt in body_sizes:
         lo, hi = 0.62, 1.65
@@ -92,6 +93,7 @@ def search(inputs, work, reference, *, fill_min, fill_max, ideal, min_body_pt) -
                 fill_min=fill_min,
                 fill_max=fill_max,
                 min_body_pt=min_body_pt,
+                expected_headings=headings,
             )
             score = rc.overflow_score(rc.parse_bbox(pdf))
             ok = _geometry_ok(report)
