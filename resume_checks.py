@@ -10,7 +10,8 @@ Checks implemented:
   * exactly one page
   * fill ratio within a caller-provided target band
   * no text overflows the page margins
-  * required sections (contact, experience, skills) present, in order
+  * required sections (contact, experience, skills) present, in order, or,
+    when the spec's resolved headings are given, exactly that order
   * structure diff against a reference .docx (used for company-tailored builds)
 """
 
@@ -278,11 +279,13 @@ def _heading_line_index(lines: list[str], heading: str) -> int:
     return -1
 
 
-def check_section_order(pdf: Path) -> CheckResult:
+def check_section_order(pdf: Path, expected_headings: list[str] | None = None) -> CheckResult:
     """Required sections present and in order: contact, experience, skills.
 
     'contact' is located by the email address near the top; section headings
-    are matched as standalone uppercase lines in reading order.
+    are matched as standalone uppercase lines in reading order. When
+    ``expected_headings`` is given (the spec's resolved layout), contact must
+    come first and then every expected heading, in exactly that order.
     """
     text = pdf_text(pdf)
     lines = text.splitlines()
@@ -291,6 +294,24 @@ def check_section_order(pdf: Path) -> CheckResult:
         (i for i, ln in enumerate(lines) if re.search(r"[\w.+-]+@[\w.-]+\.\w+", ln)),
         -1,
     )
+    if expected_headings is not None:
+        detected = detected_heading_order(text, expected_headings)
+        if email_line < 0:
+            return CheckResult("section_order", False, "missing required section(s): ['contact']")
+        # Scan forward so each heading must appear after the previous one.
+        cursor, missing = email_line, []
+        for heading in expected_headings:
+            found = _heading_line_index(lines[cursor + 1 :], heading.upper())
+            if found < 0:
+                missing.append(heading)
+            else:
+                cursor += 1 + found
+        return CheckResult(
+            "section_order",
+            not missing,
+            f"expected contact then {expected_headings}; detected order: {detected}"
+            + (f"; missing or out of order: {missing}" if missing else ""),
+        )
     exp_line = _heading_line_index(lines, "EXPERIENCE")
     skills_line = _heading_line_index(lines, "SKILLS & TOOLS")
 
@@ -317,11 +338,15 @@ def check_section_order(pdf: Path) -> CheckResult:
     )
 
 
-def detected_heading_order(text: str) -> list[str]:
-    """Headings that appear as standalone lines, in reading order."""
+def detected_heading_order(text: str, extra_headings: list[str] | None = None) -> list[str]:
+    """Headings that appear as standalone lines, in reading order.
+
+    ``extra_headings`` adds renamed or custom headings to the known set.
+    """
     lines = text.splitlines()
+    candidates = dict.fromkeys(KNOWN_HEADINGS + [h.upper() for h in extra_headings or []])
     found = [
-        (idx, h) for h in KNOWN_HEADINGS if (idx := _heading_line_index(lines, h)) >= 0
+        (idx, h) for h in candidates if (idx := _heading_line_index(lines, h)) >= 0
     ]
     return [h for _, h in sorted(found)]
 
@@ -450,6 +475,7 @@ def evaluate(
     fill_min: float = FILL_MIN,
     fill_max: float = FILL_MAX,
     min_body_pt: float = MIN_BODY_PT,
+    expected_headings: list[str] | None = None,
 ) -> Report:
     """Run every check against a rendered PDF (+ optional reference diff)."""
     pages = parse_bbox(pdf)
@@ -457,7 +483,7 @@ def evaluate(
         check_page_count(pages),
         check_fill(pages, fill_min, fill_max),
         check_overflow(pages),
-        check_section_order(pdf),
+        check_section_order(pdf, expected_headings),
     ]
     if generated_docx:
         checks.append(check_typography(generated_docx, min_body_pt))

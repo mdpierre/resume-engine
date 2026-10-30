@@ -1,0 +1,232 @@
+{
+  "company": "Education First",
+  "role": "Operations Analyst",
+  "acronym": "OA-EDU",
+  "headline": "Operations Analyst | Reporting and Dashboards | Process Improvement",
+  "section_order": [
+    "education",
+    "skills",
+    "experience",
+    "leadership",
+    "projects"
+  ],
+  "experience": [
+    {
+      "title": "Operations Analyst",
+      "organization": "Lakeshore Freight Co.",
+      "location": "Chicago, IL",
+      "dates": "Jun 2023 - Present",
+      "evidence": [
+        "experience.lakeshore_dashboard"
+      ],
+      "bullets": [
+        {
+          "text": "Rebuilt the weekly carrier-performance report from four manual spreadsheets into one SQL-backed Looker dashboard, cutting prep time from about 6 hours to under 1 hour a week.",
+          "evidence": [
+            "experience.lakeshore_dashboard"
+          ]
+        },
+        {
+          "text": "Mapped the damaged-shipment claims process with customer service and finance, reducing average claim resolution from 14 days to 9.",
+          "evidence": [
+            "experience.lakeshore_claims"
+          ]
+        },
+        {
+          "text": "Own data quality checks for 2,000+ weekly shipments.",
+          "evidence": [
+            "experience.lakeshore_data_quality"
+          ]
+        },
+        {
+          "text": "Flag shipment data anomalies to dispatch leads.",
+          "evidence": [
+            "experience.lakeshore_data_quality"
+          ]
+        },
+        {
+          "text": "Run weekly performance reviews with 8 regional carriers using the new dashboard.",
+          "evidence": [
+            "experience.lakeshore_carrier_reviews"
+          ]
+        },
+        {
+          "text": "Trained 12 dispatchers on the new dashboard.",
+          "evidence": [
+            "experience.lakeshore_training"
+          ]
+        },
+        {
+          "text": "Wrote the internal how-to guide dispatchers use for the dashboard.",
+          "evidence": [
+            "experience.lakeshore_training"
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Customer Operations Associate",
+      "organization": "BrightCart",
+      "location": "Remote",
+      "dates": "Aug 2021 - May 2023",
+      "evidence": [
+        "experience.brightcart_tickets"
+      ],
+      "bullets": [
+        {
+          "text": "Handled 60+ customer tickets a day in Zendesk across order, billing, and delivery issues.",
+          "evidence": [
+            "experience.brightcart_tickets"
+          ]
+        },
+        {
+          "text": "Kept CSAT above 94% while working that daily ticket volume.",
+          "evidence": [
+            "experience.brightcart_tickets"
+          ]
+        },
+        {
+          "text": "Built a library of 40+ saved-reply macros that the team adopted as its standard.",
+          "evidence": [
+            "experience.brightcart_macros"
+          ]
+        },
+        {
+          "text": "Tagged and categorized ticket drivers every month.",
+          "evidence": [
+            "experience.brightcart_drivers"
+          ]
+        },
+        {
+          "text": "The monthly top-three driver report fed product roadmap reviews.",
+          "evidence": [
+            "experience.brightcart_drivers"
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Student Operations Assistant",
+      "organization": "University of Illinois Chicago Library",
+      "location": "Chicago, IL",
+      "dates": "Sep 2019 - May 2021",
+      "evidence": [
+        "experience.uic_scheduling"
+      ],
+      "bullets": [
+        {
+          "text": "Scheduled 15 student workers across three service desks each semester.",
+          "evidence": [
+            "experience.uic_scheduling"
+          ]
+        },
+        {
+          "text": "Tracked loans for 300+ laptops and hotspots during remote learning.",
+          "evidence": [
+            "experience.uic_equipment"
+          ]
+        }
+      ]
+    }
+  ],
+  "leadership": [
+    {
+      "title": "Treasurer",
+      "organization": "UIC Data Science Club",
+      "location": "Chicago, IL",
+      "dates": "Aug 2020 - May 2021",
+      "evidence": [
+        "leadership.dsc_treasurer"
+      ],
+      "bullets": [
+        {
+          "text": "Managed the club's $12K annual budget.",
+          "evidence": [
+            "leadership.dsc_treasurer"
+          ]
+        },
+        {
+          "text": "Ran reimbursement for 20+ club events.",
+          "evidence": [
+            "leadership.dsc_treasurer"
+          ]
+        }
+      ]
+    }
+  ],
+  "projects": [
+    {
+      "title": "Transit Delay Tracker",
+      "description": "Personal project that pulls CTA train arrival data every five minutes and charts delay patterns by line and hour.",
+      "tools": "Python, pandas, SQLite, Streamlit.",
+      "evidence": [
+        "project.transit_tracker"
+      ]
+    },
+    {
+      "title": "Food Pantry Inventory Sheet",
+      "description": "Volunteer project that replaced a paper intake log at a neighborhood food pantry with a Google Sheets inventory and reorder alert used by 8 volunteers.",
+      "tools": "Google Sheets.",
+      "evidence": [
+        "project.food_pantry"
+      ]
+    }
+  ],
+  "skills": [
+    {
+      "label": "Strengths",
+      "items": "logistics and customer operations, dashboard design, translating between frontline teams and technical stakeholders",
+      "evidence": [
+        "positioning.ops_analyst"
+      ]
+    },
+    {
+      "label": "Data",
+      "items": "SQL, Looker, Tableau, Python (pandas)",
+      "evidence": [
+        "skills.data"
+      ]
+    },
+    {
+      "label": "Excel",
+      "items": "pivot tables, XLOOKUP, Power Query",
+      "evidence": [
+        "skills.data"
+      ]
+    },
+    {
+      "label": "Operations",
+      "items": "process mapping, SOP writing, KPI reporting, vendor coordination, training",
+      "evidence": [
+        "skills.operations"
+      ]
+    },
+    {
+      "label": "Tools",
+      "items": "Zendesk, Jira, Asana, Google Workspace, Microsoft 365, Slack",
+      "evidence": [
+        "skills.tools"
+      ]
+    },
+    {
+      "label": "Certifications",
+      "items": "Google Data Analytics Professional Certificate (2022), Lean Six Sigma Yellow Belt (2023)",
+      "evidence": [
+        "skills.certifications"
+      ]
+    }
+  ],
+  "education": [
+    {
+      "degree": "BS, Information and Decision Sciences",
+      "school": "University of Illinois Chicago",
+      "location": "Chicago, IL",
+      "date": "May 2021",
+      "detail": "Minor: Statistics | Coursework: Database Management, Business Analytics, Supply Chain Operations, Data Visualization",
+      "evidence": [
+        "education.uic_bs",
+        "education.uic_minor_coursework"
+      ]
+    }
+  ]
+}

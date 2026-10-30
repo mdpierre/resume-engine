@@ -13,6 +13,7 @@ validation.
 from __future__ import annotations
 
 import json
+import re
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
@@ -41,6 +42,18 @@ CONTACT_LABELS = {
     "portfolio": "website",
 }
 CONTACT_ORDER = ["location", "phone", "email", "linkedin", "github", "website"]
+
+# Built-in section ids, in default layout order, with their default headings.
+DEFAULT_SECTION_ORDER = ["summary", "alignment", "experience", "leadership", "projects", "skills", "education"]
+SECTION_TITLES = dict(
+    zip(
+        DEFAULT_SECTION_ORDER,
+        ["PROFILE", "ROLE ALIGNMENT", "EXPERIENCE", "LEADERSHIP", "PROJECTS", "SKILLS & TOOLS", "EDUCATION"],
+    )
+)
+# Built-ins skipped when the spec leaves them empty or out.
+OPTIONAL_SECTIONS = {"alignment", "leadership", "projects", "skills"}
+CUSTOM_ID = re.compile(r"[a-z0-9_-]+")
 
 
 @dataclass(frozen=True)
@@ -164,6 +177,11 @@ def _all_evidence_ids(spec: dict[str, Any]) -> set[str]:
         ids.update(group.get("evidence", []))
     for edu in _education_entries(spec):
         ids.update(edu.get("evidence", []))
+    for section in spec.get("sections", []):
+        for item in section.get("items", []):
+            ids.update(item.get("evidence", []))
+            for bullet in item.get("bullets", []):
+                ids.update(bullet.get("evidence", []))
     return ids
 
 
@@ -179,7 +197,9 @@ def _iter_text(value: Any):
 
 
 def validate_spec(spec: dict[str, Any], facts: dict[str, Any], spec_path: Path) -> None:
-    required = {"company", "role", "summary", "experience", "skills", "education"}
+    layout = _resolve_sections(spec)
+    has_summary = any(section["id"] == "summary" for section in layout)
+    required = {"company", "role", "experience", "education"} | ({"summary"} if has_summary else set())
     missing = sorted(required - set(spec))
     if missing:
         raise ValueError(f"spec missing required keys: {missing}")
@@ -188,7 +208,7 @@ def validate_spec(spec: dict[str, Any], facts: dict[str, Any], spec_path: Path) 
     unknown = sorted(_all_evidence_ids(spec) - known)
     if unknown:
         raise ValueError(f"spec references unknown evidence ids: {unknown}")
-    if not spec.get("summary_evidence"):
+    if has_summary and not spec.get("summary_evidence"):
         raise ValueError("summary_evidence must cite at least one supported fact")
 
     for section in ("experience", "leadership", "projects", "skills"):
@@ -286,6 +306,235 @@ def _render_items(doc: Document, st: Style, items: list[dict[str, Any]]) -> None
             _bullet(doc, st, bullet["text"])
 
 
+def _render_summary(doc: Document, st: Style, section: dict[str, Any]) -> None:
+    _section(doc, st, section["title"])
+    p = _paragraph(doc, st, before=1.4, after=1.4)
+    _run(p, st, section["spec"]["summary"])
+
+
+def _render_alignment(doc: Document, st: Style, section: dict[str, Any]) -> None:
+    _section(doc, st, section["title"])
+    p = _paragraph(doc, st, before=1.4, after=1.4)
+    _run(p, st, " | ".join(section["spec"]["alignment"]))
+
+
+def _render_experience(doc: Document, st: Style, section: dict[str, Any]) -> None:
+    _section(doc, st, section["title"])
+    _render_items(doc, st, section["spec"]["experience"])
+
+
+def _render_leadership(doc: Document, st: Style, section: dict[str, Any]) -> None:
+    _section(doc, st, section["title"])
+    _render_items(doc, st, section["spec"]["leadership"])
+
+
+def _render_projects(doc: Document, st: Style, section: dict[str, Any]) -> None:
+    _section(doc, st, section["title"])
+    for item in section["spec"]["projects"]:
+        p = _paragraph(doc, st, before=2.6, after=1.5)
+        _run(p, st, f'{item["title"]}: ', bold=True)
+        _run(p, st, item["description"])
+        if item.get("tools"):
+            _run(p, st, f'  {item["tools"]}', italic=True, color=MUTED)
+
+
+def _skill_lines(doc: Document, st: Style, groups: list[dict[str, Any]]) -> None:
+    for i, group in enumerate(groups):
+        p = _paragraph(doc, st, before=1.5 if i == 0 else 0.65, after=0.65)
+        _run(p, st, f'{group["label"]}: ', bold=True)
+        _run(p, st, group["items"])
+
+
+def _render_skills(doc: Document, st: Style, section: dict[str, Any]) -> None:
+    _section(doc, st, section["title"])
+    _skill_lines(doc, st, section["spec"]["skills"])
+
+
+def _render_education(doc: Document, st: Style, section: dict[str, Any]) -> None:
+    _section(doc, st, section["title"])
+    for i, edu in enumerate(_education_entries(section["spec"])):
+        p = _paragraph(doc, st, before=3.2 if i == 0 else 2.2, after=0.7)
+        _right_tab(p, st)
+        _run(p, st, edu["degree"], offset=0.55, bold=True)
+        if edu.get("school"):
+            _run(p, st, "  |  ", color=FAINT)
+            _run(p, st, edu["school"], italic=True, color=MUTED)
+        right = " | ".join(part for part in (edu.get("location"), edu.get("date")) if part)
+        if right:
+            _run(p, st, "\t")
+            _run(p, st, right, offset=-0.9, color=FAINT)
+        if edu.get("detail"):
+            p = _paragraph(doc, st, before=0.5, after=0.5)
+            _run(p, st, edu["detail"], offset=-0.15, color=MUTED)
+
+
+BUILTIN_RENDERERS = {
+    "summary": _render_summary,
+    "alignment": _render_alignment,
+    "experience": _render_experience,
+    "leadership": _render_leadership,
+    "projects": _render_projects,
+    "skills": _render_skills,
+    "education": _render_education,
+}
+
+
+# --- Custom sections ---------------------------------------------------------
+# A custom section is {id, title, type, items}. Each type pairs a renderer
+# (doc, style, section) with a validator (section) that raises ValueError with
+# a path such as "sections[awards].items[0]".
+
+
+def _validate_item(item: Any, path: str, fields: tuple[str, ...]) -> None:
+    if not isinstance(item, dict):
+        raise ValueError(f"{path} must be an object")
+    for key in fields:
+        if not isinstance(item.get(key), str) or not item[key].strip():
+            raise ValueError(f"{path}.{key} must be a nonempty string")
+    evidence = item.get("evidence")
+    if not isinstance(evidence, list) or not evidence or not all(isinstance(e, str) and e for e in evidence):
+        raise ValueError(f"{path} must cite at least one evidence id")
+
+
+def _custom_items(section: dict[str, Any], fields: tuple[str, ...]) -> list[dict[str, Any]]:
+    path = f'sections[{section["id"]}]'
+    items = section.get("items")
+    if not isinstance(items, list) or not items:
+        raise ValueError(f"{path}.items must be a nonempty list")
+    for index, item in enumerate(items):
+        _validate_item(item, f"{path}.items[{index}]", fields)
+    return items
+
+
+def _validate_bullets(section: dict[str, Any]) -> None:
+    _custom_items(section, ("text",))
+
+
+def _validate_skills_list(section: dict[str, Any]) -> None:
+    _custom_items(section, ("label", "items"))
+
+
+def _validate_entries(section: dict[str, Any]) -> None:
+    for index, item in enumerate(_custom_items(section, ("title",))):
+        path = f'sections[{section["id"]}].items[{index}]'
+        for key in ("organization", "location", "dates"):
+            if key in item and not isinstance(item[key], str):
+                raise ValueError(f"{path}.{key} must be a string")
+        bullets = item.get("bullets", [])
+        if not isinstance(bullets, list):
+            raise ValueError(f"{path}.bullets must be a list")
+        for bullet_index, bullet in enumerate(bullets):
+            _validate_item(bullet, f"{path}.bullets[{bullet_index}]", ("text",))
+
+
+def _render_bullets(doc: Document, st: Style, section: dict[str, Any]) -> None:
+    _section(doc, st, section["title"])
+    for item in section["items"]:
+        _bullet(doc, st, item["text"])
+
+
+def _render_skills_list(doc: Document, st: Style, section: dict[str, Any]) -> None:
+    _section(doc, st, section["title"])
+    _skill_lines(doc, st, section["items"])
+
+
+def _render_entries(doc: Document, st: Style, section: dict[str, Any]) -> None:
+    _section(doc, st, section["title"])
+    _render_items(doc, st, section["items"])
+
+
+SECTION_TYPES = {
+    "bullets": (_render_bullets, _validate_bullets),
+    "skills-list": (_render_skills_list, _validate_skills_list),
+    "entries": (_render_entries, _validate_entries),
+}
+
+
+def _custom_sections(spec: dict[str, Any]) -> dict[str, dict[str, Any]]:
+    custom = spec.get("sections", [])
+    if not isinstance(custom, list):
+        raise ValueError("sections must be a list")
+    sections: dict[str, dict[str, Any]] = {}
+    for index, section in enumerate(custom):
+        if not isinstance(section, dict):
+            raise ValueError(f"sections[{index}] must be an object")
+        sid = section.get("id")
+        if not isinstance(sid, str) or not CUSTOM_ID.fullmatch(sid) or sid in SECTION_TITLES:
+            raise ValueError(
+                f"invalid custom section id: {sid!r} (use [a-z0-9_-]+, not a built-in id)"
+            )
+        if sid in sections:
+            raise ValueError(f"duplicate section id: {sid}")
+        title = section.get("title")
+        if not isinstance(title, str) or not title.strip():
+            raise ValueError(f"sections[{sid}].title must be a nonempty string")
+        kind = section.get("type")
+        if not isinstance(kind, str) or kind not in SECTION_TYPES:
+            raise ValueError(f"unknown section type for sections[{sid}]: {kind!r} (known: {sorted(SECTION_TYPES)})")
+        SECTION_TYPES[kind][1](section)
+        sections[sid] = section
+    return sections
+
+
+def _section_order(spec: dict[str, Any], custom: dict[str, dict[str, Any]]) -> list[str]:
+    if "section_order" not in spec:
+        # Custom sections go after skills, before education.
+        cut = DEFAULT_SECTION_ORDER.index("education")
+        return DEFAULT_SECTION_ORDER[:cut] + list(custom) + DEFAULT_SECTION_ORDER[cut:]
+    order = spec["section_order"]
+    if not isinstance(order, list) or not all(isinstance(sid, str) for sid in order):
+        raise ValueError("section_order must be a list of section ids")
+    duplicates = sorted({sid for sid in order if order.count(sid) > 1})
+    if duplicates:
+        raise ValueError(f"duplicate ids in section_order: {duplicates}")
+    unknown = sorted(set(order) - set(SECTION_TITLES) - set(custom))
+    if unknown:
+        raise ValueError(f"unknown section ids in section_order: {unknown}")
+    required = {"experience", "education"} | set(custom)
+    if spec.get("skills"):
+        required.add("skills")
+    missing = sorted(required - set(order))
+    if missing:
+        raise ValueError(f"section_order missing required sections: {missing}")
+    return order
+
+
+def _resolve_sections(spec: dict[str, Any]) -> list[dict[str, Any]]:
+    """Validate layout fields and return the sections to render, in order.
+
+    Built-in entries are {id, type, title, spec}; custom entries are the
+    custom section dict with its title resolved.
+    """
+    custom = _custom_sections(spec)
+    order = _section_order(spec, custom)
+    titles = spec.get("section_titles", {})
+    if not isinstance(titles, dict):
+        raise ValueError("section_titles must be an object of section id -> heading")
+    unknown = sorted(set(titles) - set(SECTION_TITLES) - set(custom))
+    if unknown:
+        raise ValueError(f"unknown section_titles keys: {unknown}")
+    blank = sorted(k for k, v in titles.items() if not isinstance(v, str) or not v.strip())
+    if blank:
+        raise ValueError(f"section_titles values must be nonempty strings: {blank}")
+
+    resolved = []
+    for sid in order:
+        if sid in OPTIONAL_SECTIONS and not spec.get(sid):
+            continue
+        if sid in custom:
+            section = dict(custom[sid])
+        else:
+            section = {"id": sid, "type": sid, "title": SECTION_TITLES[sid], "spec": spec}
+        section["title"] = titles.get(sid, section["title"]).strip().upper()
+        resolved.append(section)
+    return resolved
+
+
+def section_headings(spec: dict[str, Any]) -> list[str]:
+    """Rendered section headings (uppercase) in layout order."""
+    return [section["title"] for section in _resolve_sections(spec)]
+
+
 def build_document(inputs: ResumeInputs, style: Style) -> Document:
     spec = inputs.spec
     person = inputs.person
@@ -318,52 +567,9 @@ def build_document(inputs: ResumeInputs, style: Style) -> Document:
     p = _paragraph(doc, style, align=WD_ALIGN_PARAGRAPH.CENTER, after=2.8)
     _run(p, style, contact, offset=-1.1, color=MUTED)
 
-    _section(doc, style, "PROFILE")
-    p = _paragraph(doc, style, before=1.4, after=1.4)
-    _run(p, style, spec["summary"])
-
-    if spec.get("alignment"):
-        _section(doc, style, "ROLE ALIGNMENT")
-        p = _paragraph(doc, style, before=1.4, after=1.4)
-        _run(p, style, " | ".join(spec["alignment"]))
-
-    _section(doc, style, "EXPERIENCE")
-    _render_items(doc, style, spec["experience"])
-
-    if spec.get("leadership"):
-        _section(doc, style, "LEADERSHIP")
-        _render_items(doc, style, spec["leadership"])
-
-    if spec.get("projects"):
-        _section(doc, style, "PROJECTS")
-        for item in spec["projects"]:
-            p = _paragraph(doc, style, before=2.6, after=1.5)
-            _run(p, style, f'{item["title"]}: ', bold=True)
-            _run(p, style, item["description"])
-            if item.get("tools"):
-                _run(p, style, f'  {item["tools"]}', italic=True, color=MUTED)
-
-    _section(doc, style, "SKILLS & TOOLS")
-    for i, group in enumerate(spec["skills"]):
-        p = _paragraph(doc, style, before=1.5 if i == 0 else 0.65, after=0.65)
-        _run(p, style, f'{group["label"]}: ', bold=True)
-        _run(p, style, group["items"])
-
-    _section(doc, style, "EDUCATION")
-    for i, edu in enumerate(_education_entries(spec)):
-        p = _paragraph(doc, style, before=3.2 if i == 0 else 2.2, after=0.7)
-        _right_tab(p, style)
-        _run(p, style, edu["degree"], offset=0.55, bold=True)
-        if edu.get("school"):
-            _run(p, style, "  |  ", color=FAINT)
-            _run(p, style, edu["school"], italic=True, color=MUTED)
-        right = " | ".join(part for part in (edu.get("location"), edu.get("date")) if part)
-        if right:
-            _run(p, style, "\t")
-            _run(p, style, right, offset=-0.9, color=FAINT)
-        if edu.get("detail"):
-            p = _paragraph(doc, style, before=0.5, after=0.5)
-            _run(p, style, edu["detail"], offset=-0.15, color=MUTED)
+    for block in _resolve_sections(spec):
+        renderer = BUILTIN_RENDERERS.get(block["id"]) or SECTION_TYPES[block["type"]][0]
+        renderer(doc, style, block)
 
     return doc
 

@@ -14,8 +14,10 @@ If `data/` doesn't exist yet and the user asks to tailor, run setup first.
 ```bash
 .venv/bin/python resume.py validate <spec>
 .venv/bin/python resume.py build <spec> [--output-dir DIR] [--hide-phone]
-.venv/bin/python -m unittest -v tests/test_engine.py
+.venv/bin/python -m unittest -v tests/test_engine.py tests/test_sections.py
 ```
+
+Specs can reorder, rename, and add sections (`section_order`, `section_titles`, `sections`); see "Section layout" in README.md.
 
 If `.venv` is missing: `python3 -m venv .venv && .venv/bin/pip install -r requirements.txt`. The build also needs LibreOffice (`soffice`) and Poppler (`pdftotext`, `pdftoppm`); if either is missing, tell the user the install command from README.md rather than working around it.
 
