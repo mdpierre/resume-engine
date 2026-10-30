@@ -14,13 +14,14 @@ from __future__ import annotations
 
 import json
 import re
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from pathlib import Path
 from typing import Any
 
 from docx import Document
 from docx.enum.section import WD_ORIENT
 from docx.enum.text import WD_ALIGN_PARAGRAPH, WD_TAB_ALIGNMENT
+from docx.opc.constants import RELATIONSHIP_TYPE
 from docx.oxml import OxmlElement
 from docx.oxml.ns import qn
 from docx.shared import Inches, Pt, RGBColor
@@ -28,6 +29,8 @@ from docx.shared import Inches, Pt, RGBColor
 INK = RGBColor(0x1A, 0x1A, 0x1A)
 MUTED = RGBColor(0x55, 0x55, 0x55)
 FAINT = RGBColor(0x77, 0x77, 0x77)
+LINK = RGBColor(0x1F, 0x4E, 0x8C)
+RULE = "9A9A9A"
 
 # Contact labels accepted in the PROFILE.md "## Contact" block, mapped to keys.
 CONTACT_LABELS = {
@@ -57,6 +60,41 @@ CUSTOM_ID = re.compile(r"[a-z0-9_-]+")
 
 
 @dataclass(frozen=True)
+class Layout:
+    """Default section order and headings. A spec picks one with its ``layout`` key."""
+
+    order: tuple[str, ...]
+    titles: dict[str, str]
+    technical: bool = False
+    line_spacing: float = 1.0
+    custom_before: str | None = None  # default slot for custom sections; None means last
+
+
+LAYOUTS = {
+    "classic": Layout(order=tuple(DEFAULT_SECTION_ORDER), titles=SECTION_TITLES, custom_before="education"),
+    "technical": Layout(
+        order=("education", "skills", "projects", "experience", "leadership"),
+        titles={
+            "education": "EDUCATION",
+            "skills": "TECHNICAL SKILLS",
+            "projects": "SELECTED TECHNICAL PROJECTS",
+            "experience": "PROFESSIONAL EXPERIENCE",
+            "leadership": "LEADERSHIP & ACTIVITIES",
+        },
+        technical=True,
+        line_spacing=1.06,
+    ),
+}
+
+
+def layout_of(spec: dict[str, Any]) -> Layout:
+    name = spec.get("layout", "classic")
+    if name not in LAYOUTS:
+        raise ValueError(f"unknown layout {name!r}; expected one of {sorted(LAYOUTS)}")
+    return LAYOUTS[name]
+
+
+@dataclass(frozen=True)
 class Style:
     """Readable typography plus an independently tunable spacing scale."""
 
@@ -66,6 +104,7 @@ class Style:
     line_spacing: float = 1.0
     font_name: str = "Arial"
     accent_hex: str = "1A56DB"
+    technical: bool = False
 
     @property
     def accent(self) -> RGBColor:
@@ -161,6 +200,45 @@ def _resolve_person(facts: dict[str, Any], profile_path: Path) -> dict[str, str]
     return person
 
 
+def contact_fields(spec: dict[str, Any], person: dict[str, str]) -> dict[str, str]:
+    """Contact values that will render for this spec, in display order."""
+    hidden = set(spec.get("hide_contact", []))
+    if spec.get("hide_phone"):
+        hidden.add("phone")
+    return {k: person[k] for k in CONTACT_ORDER if person.get(k) and k not in hidden}
+
+
+def contact_links(person: dict[str, str]) -> dict[str, str]:
+    """Link target for each contact field that has one."""
+    targets = {
+        "email": "mailto:{}",
+        "linkedin": "https://www.{}/",
+        "github": "https://{}",
+        "website": "https://{}",
+    }
+    return {k: target.format(person[k]) for k, target in targets.items() if person.get(k)}
+
+
+def expected_links(inputs: ResumeInputs) -> list[str]:
+    """Every URL the rendered resume must carry as a clickable link."""
+    spec = inputs.spec
+    if not layout_of(spec).technical:
+        return []
+    targets = contact_links(inputs.person)
+    links = [targets[k] for k in contact_fields(spec, inputs.person) if k in targets]
+    links.extend(link["url"] for item in _linkable_items(spec) for link in item.get("links", []))
+    return links
+
+
+def _linkable_items(spec: dict[str, Any]):
+    """Items whose ``links`` render in the technical layout."""
+    for section in ("experience", "leadership", "projects"):
+        yield from spec.get(section, [])
+    for section in spec.get("sections", []):
+        if section.get("type") == "entries":
+            yield from section.get("items", [])
+
+
 def _education_entries(spec: dict[str, Any]) -> list[dict[str, Any]]:
     edu = spec.get("education", [])
     return [edu] if isinstance(edu, dict) else list(edu)
@@ -168,6 +246,7 @@ def _education_entries(spec: dict[str, Any]) -> list[dict[str, Any]]:
 
 def _all_evidence_ids(spec: dict[str, Any]) -> set[str]:
     ids: set[str] = set(spec.get("summary_evidence", []))
+    ids.update(spec.get("projects_note_evidence", []))
     for section in ("experience", "leadership", "projects"):
         for item in spec.get(section, []):
             ids.update(item.get("evidence", []))
@@ -210,6 +289,13 @@ def validate_spec(spec: dict[str, Any], facts: dict[str, Any], spec_path: Path) 
         raise ValueError(f"spec references unknown evidence ids: {unknown}")
     if has_summary and not spec.get("summary_evidence"):
         raise ValueError("summary_evidence must cite at least one supported fact")
+    if spec.get("projects_note") and not spec.get("projects_note_evidence"):
+        raise ValueError("projects_note must cite at least one evidence id")
+
+    for item in _linkable_items(spec):
+        for link in item.get("links", []):
+            if not link.get("label") or not link.get("url", "").startswith("https://"):
+                raise ValueError(f"link needs a label and an https url: {link}")
 
     for section in ("experience", "leadership", "projects", "skills"):
         for index, item in enumerate(spec.get(section, [])):
@@ -255,22 +341,31 @@ def _paragraph(doc: Document, st: Style, *, align=None, before=0.0, after=0.0):
     return p
 
 
-def _bottom_border(p, st: Style) -> None:
+def _bottom_border(p, *, color: str, size: str = "6") -> None:
     ppr = p._p.get_or_add_pPr()
     pbdr = OxmlElement("w:pBdr")
     bottom = OxmlElement("w:bottom")
     bottom.set(qn("w:val"), "single")
-    bottom.set(qn("w:sz"), "6")
+    bottom.set(qn("w:sz"), size)
     bottom.set(qn("w:space"), "1")
-    bottom.set(qn("w:color"), st.accent_hex.upper())
+    bottom.set(qn("w:color"), color)
     pbdr.append(bottom)
     ppr.append(pbdr)
 
 
 def _section(doc: Document, st: Style, label: str) -> None:
+    if st.technical:
+        p = _paragraph(doc, st, before=8.0, after=2.6)
+        p.paragraph_format.keep_with_next = True
+        run = _run(p, st, label, offset=-0.3, bold=True)
+        tracking = OxmlElement("w:spacing")
+        tracking.set(qn("w:val"), "10")
+        run._element.get_or_add_rPr().append(tracking)
+        _bottom_border(p, color=RULE, size="4")
+        return
     p = _paragraph(doc, st, before=6.2, after=2.0)
     _run(p, st, label, offset=-0.15, color=st.accent, bold=True)
-    _bottom_border(p, st)
+    _bottom_border(p, color=st.accent_hex.upper())
 
 
 def _right_tab(p, st: Style) -> None:
@@ -289,19 +384,64 @@ def _item_header(doc: Document, st: Style, item: dict[str, Any]) -> None:
     _run(p, st, right, offset=-0.9, color=FAINT)
 
 
+def _hyperlink(p, st: Style, text: str, url: str, *, offset=0.0) -> None:
+    """Add a clickable link that stays ordinary selectable text in the PDF."""
+    rel_id = p.part.relate_to(url, RELATIONSHIP_TYPE.HYPERLINK, is_external=True)
+    link = OxmlElement("w:hyperlink")
+    link.set(qn("r:id"), rel_id)
+    link.append(_run(p, st, text, offset=offset, color=LINK)._element)
+    p._p.append(link)
+
+
+def _rich(p, st: Style, text: str) -> None:
+    """Render ``**emphasis**`` spans in running text as bold."""
+    for index, part in enumerate(text.split("**")):
+        if part:
+            _run(p, st, part, bold=index % 2 == 1)
+
+
+def _technical_entry(doc: Document, st: Style, item: dict[str, Any]) -> None:
+    p = _paragraph(doc, st, before=4.0, after=0.5)
+    p.paragraph_format.keep_with_next = True
+    _right_tab(p, st)
+    _run(p, st, item["title"], offset=0.5, bold=True)
+    detail = item.get("organization") or item.get("subtitle")
+    if detail:
+        _run(p, st, "  |  ", color=FAINT)
+        _run(p, st, detail, color=MUTED)
+    _run(p, st, "\t")
+    links = item.get("links", [])
+    for index, link in enumerate(links):
+        if index:
+            _run(p, st, "  |  ", offset=-0.7, color=FAINT)
+        _hyperlink(p, st, link["label"], link["url"], offset=-0.7)
+    if item.get("dates"):
+        if links:
+            _run(p, st, "  |  ", offset=-0.7, color=FAINT)
+        _run(p, st, item["dates"], offset=-0.5, color=MUTED)
+    if item.get("description"):
+        p = _paragraph(doc, st, after=0.5)
+        p.paragraph_format.keep_with_next = True
+        _run(p, st, item["description"])
+
+
 def _bullet(doc: Document, st: Style, text: str) -> None:
     p = doc.add_paragraph(style="List Bullet")
-    p.paragraph_format.left_indent = Inches(0.24)
+    p.paragraph_format.left_indent = Inches(0.2 if st.technical else 0.24)
     p.paragraph_format.first_line_indent = Inches(-0.14)
-    p.paragraph_format.space_before = st.gap(0.55)
-    p.paragraph_format.space_after = st.gap(0.55)
+    gap = st.gap(0.7 if st.technical else 0.55)
+    p.paragraph_format.space_before = gap
+    p.paragraph_format.space_after = gap
     p.paragraph_format.line_spacing = st.line_spacing
-    _run(p, st, text)
+    if st.technical:
+        _rich(p, st, text)
+    else:
+        _run(p, st, text)
 
 
 def _render_items(doc: Document, st: Style, items: list[dict[str, Any]]) -> None:
     for item in items:
-        _item_header(doc, st, item)
+        (_technical_entry if st.technical else _item_header)(doc, st, item)
         for bullet in item.get("bullets", []):
             _bullet(doc, st, bullet["text"])
 
@@ -330,7 +470,14 @@ def _render_leadership(doc: Document, st: Style, section: dict[str, Any]) -> Non
 
 def _render_projects(doc: Document, st: Style, section: dict[str, Any]) -> None:
     _section(doc, st, section["title"])
-    for item in section["spec"]["projects"]:
+    spec = section["spec"]
+    if st.technical:
+        if spec.get("projects_note"):
+            p = _paragraph(doc, st, before=1.0, after=0.5)
+            _run(p, st, spec["projects_note"], offset=-0.5, italic=True, color=MUTED)
+        _render_items(doc, st, spec["projects"])
+        return
+    for item in spec["projects"]:
         p = _paragraph(doc, st, before=2.6, after=1.5)
         _run(p, st, f'{item["title"]}: ', bold=True)
         _run(p, st, item["description"])
@@ -339,8 +486,9 @@ def _render_projects(doc: Document, st: Style, section: dict[str, Any]) -> None:
 
 
 def _skill_lines(doc: Document, st: Style, groups: list[dict[str, Any]]) -> None:
+    first, rest = (1.2, 0.6) if st.technical else (1.5, 0.65)
     for i, group in enumerate(groups):
-        p = _paragraph(doc, st, before=1.5 if i == 0 else 0.65, after=0.65)
+        p = _paragraph(doc, st, before=first if i == 0 else rest, after=rest)
         _run(p, st, f'{group["label"]}: ', bold=True)
         _run(p, st, group["items"])
 
@@ -350,8 +498,27 @@ def _render_skills(doc: Document, st: Style, section: dict[str, Any]) -> None:
     _skill_lines(doc, st, section["spec"]["skills"])
 
 
+def _technical_education(doc: Document, st: Style, edu: dict[str, Any]) -> None:
+    p = _paragraph(doc, st, before=2.0, after=0.5)
+    _right_tab(p, st)
+    _run(p, st, edu["degree"], offset=0.5, bold=True)
+    if edu.get("school"):
+        _run(p, st, "  |  ", color=FAINT)
+        _run(p, st, edu["school"], color=MUTED)
+    if edu.get("date"):
+        _run(p, st, "\t")
+        _run(p, st, edu["date"], offset=-0.5, color=MUTED)
+    if edu.get("detail"):
+        p = _paragraph(doc, st, before=0.4)
+        _run(p, st, edu["detail"], offset=-0.5, color=MUTED)
+
+
 def _render_education(doc: Document, st: Style, section: dict[str, Any]) -> None:
     _section(doc, st, section["title"])
+    if st.technical:
+        for edu in _education_entries(section["spec"]):
+            _technical_education(doc, st, edu)
+        return
     for i, edu in enumerate(_education_entries(section["spec"])):
         p = _paragraph(doc, st, before=3.2 if i == 0 else 2.2, after=0.7)
         _right_tab(p, st)
@@ -477,17 +644,18 @@ def _custom_sections(spec: dict[str, Any]) -> dict[str, dict[str, Any]]:
 
 
 def _section_order(spec: dict[str, Any], custom: dict[str, dict[str, Any]]) -> list[str]:
+    layout = layout_of(spec)
     if "section_order" not in spec:
-        # Custom sections go after skills, before education.
-        cut = DEFAULT_SECTION_ORDER.index("education")
-        return DEFAULT_SECTION_ORDER[:cut] + list(custom) + DEFAULT_SECTION_ORDER[cut:]
+        default = list(layout.order)
+        cut = default.index(layout.custom_before) if layout.custom_before else len(default)
+        return default[:cut] + list(custom) + default[cut:]
     order = spec["section_order"]
     if not isinstance(order, list) or not all(isinstance(sid, str) for sid in order):
         raise ValueError("section_order must be a list of section ids")
     duplicates = sorted({sid for sid in order if order.count(sid) > 1})
     if duplicates:
         raise ValueError(f"duplicate ids in section_order: {duplicates}")
-    unknown = sorted(set(order) - set(SECTION_TITLES) - set(custom))
+    unknown = sorted(set(order) - set(layout.titles) - set(custom))
     if unknown:
         raise ValueError(f"unknown section ids in section_order: {unknown}")
     required = {"experience", "education"} | set(custom)
@@ -505,12 +673,13 @@ def _resolve_sections(spec: dict[str, Any]) -> list[dict[str, Any]]:
     Built-in entries are {id, type, title, spec}; custom entries are the
     custom section dict with its title resolved.
     """
+    layout = layout_of(spec)
     custom = _custom_sections(spec)
     order = _section_order(spec, custom)
     titles = spec.get("section_titles", {})
     if not isinstance(titles, dict):
         raise ValueError("section_titles must be an object of section id -> heading")
-    unknown = sorted(set(titles) - set(SECTION_TITLES) - set(custom))
+    unknown = sorted(set(titles) - set(layout.titles) - set(custom))
     if unknown:
         raise ValueError(f"unknown section_titles keys: {unknown}")
     blank = sorted(k for k, v in titles.items() if not isinstance(v, str) or not v.strip())
@@ -524,7 +693,7 @@ def _resolve_sections(spec: dict[str, Any]) -> list[dict[str, Any]]:
         if sid in custom:
             section = dict(custom[sid])
         else:
-            section = {"id": sid, "type": sid, "title": SECTION_TITLES[sid], "spec": spec}
+            section = {"id": sid, "type": sid, "title": layout.titles[sid], "spec": spec}
         section["title"] = titles.get(sid, section["title"]).strip().upper()
         resolved.append(section)
     return resolved
@@ -535,9 +704,38 @@ def section_headings(spec: dict[str, Any]) -> list[str]:
     return [section["title"] for section in _resolve_sections(spec)]
 
 
+def _classic_header(doc: Document, st: Style, spec: dict[str, Any], person: dict[str, str]) -> None:
+    p = _paragraph(doc, st, align=WD_ALIGN_PARAGRAPH.CENTER, after=0.8)
+    _run(p, st, person["name"], offset=13.0, bold=True)
+
+    if spec.get("headline"):
+        p = _paragraph(doc, st, align=WD_ALIGN_PARAGRAPH.CENTER, after=1.5)
+        _run(p, st, spec["headline"], offset=0.1, color=st.accent, bold=True)
+
+    p = _paragraph(doc, st, align=WD_ALIGN_PARAGRAPH.CENTER, after=2.8)
+    _run(p, st, " | ".join(contact_fields(spec, person).values()), offset=-1.1, color=MUTED)
+
+
+def _technical_header(doc: Document, st: Style, spec: dict[str, Any], person: dict[str, str]) -> None:
+    p = _paragraph(doc, st, after=2.0)
+    _run(p, st, person["name"], offset=11.0, bold=True)
+
+    p = _paragraph(doc, st, after=1.0)
+    links = contact_links(person)
+    for index, (key, value) in enumerate(contact_fields(spec, person).items()):
+        if index:
+            _run(p, st, "  |  ", offset=-0.5, color=FAINT)
+        if key in links:
+            _hyperlink(p, st, value, links[key], offset=-0.5)
+        else:
+            _run(p, st, value, offset=-0.5, color=MUTED)
+
+
 def build_document(inputs: ResumeInputs, style: Style) -> Document:
     spec = inputs.spec
     person = inputs.person
+    layout = layout_of(spec)
+    style = replace(style, line_spacing=layout.line_spacing, technical=layout.technical)
 
     doc = Document()
     section = doc.sections[0]
@@ -553,19 +751,12 @@ def build_document(inputs: ResumeInputs, style: Style) -> Document:
     normal.font.color.rgb = INK
     normal.paragraph_format.line_spacing = style.line_spacing
 
-    p = _paragraph(doc, style, align=WD_ALIGN_PARAGRAPH.CENTER, after=0.8)
-    _run(p, style, person["name"], offset=13.0, bold=True)
-
-    if spec.get("headline"):
-        p = _paragraph(doc, style, align=WD_ALIGN_PARAGRAPH.CENTER, after=1.5)
-        _run(p, style, spec["headline"], offset=0.1, color=style.accent, bold=True)
-
-    hidden = set(spec.get("hide_contact", []))
-    if spec.get("hide_phone"):
-        hidden.add("phone")
-    contact = " | ".join(person[k] for k in CONTACT_ORDER if person.get(k) and k not in hidden)
-    p = _paragraph(doc, style, align=WD_ALIGN_PARAGRAPH.CENTER, after=2.8)
-    _run(p, style, contact, offset=-1.1, color=MUTED)
+    if layout.technical:
+        doc.core_properties.author = person["name"]
+        doc.core_properties.title = f'{person["name"]} - Resume'
+        _technical_header(doc, style, spec, person)
+    else:
+        _classic_header(doc, style, spec, person)
 
     for block in _resolve_sections(spec):
         renderer = BUILTIN_RENDERERS.get(block["id"]) or SECTION_TYPES[block["type"]][0]

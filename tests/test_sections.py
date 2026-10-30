@@ -253,7 +253,7 @@ class SectionLayoutTests(unittest.TestCase):
         for spec_path in specs:
             with self.subTest(spec=spec_path.name):
                 headings = section_headings(load_inputs(spec_path, FACTS).spec)
-                self.assertIn("EXPERIENCE", headings)
+                self.assertTrue(any("EXPERIENCE" in heading for heading in headings), headings)
                 self.assertIn("EDUCATION", headings)
 
 

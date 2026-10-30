@@ -90,7 +90,14 @@ class ProducedArtifactTests(unittest.TestCase):
         cls.pdf = next(iter(sorted(root.glob("*.pdf"))), None)
         if not cls.docx or not cls.pdf:
             raise unittest.SkipTest(f"resume DOCX/PDF not found in {root}")
-        cls.report = rc.evaluate(cls.pdf, generated_docx=cls.docx)
+        manifest = root / "resume-validation.json"
+        built = json.loads(manifest.read_text(encoding="utf-8")) if manifest.exists() else {}
+        cls.report = rc.evaluate(
+            cls.pdf,
+            generated_docx=cls.docx,
+            expected_headings=built.get("expected_headings"),
+            expected_links=built.get("expected_links"),
+        )
 
     def test_all_checks_pass(self):
         failed = [f"{c.name}: {c.detail}" for c in self.report.checks if not c.passed]

@@ -58,11 +58,13 @@ teams and technical stakeholders.
 
 Personal project that pulls CTA train arrival data every five minutes and
 charts delay patterns by line and hour. Python, pandas, SQLite, Streamlit.
+Code: https://example.com/jrivera/transit-delay-tracker
 
 ### Food Pantry Inventory Sheet
 
 Volunteer project: replaced a paper intake log at a neighborhood food pantry
 with a Google Sheets inventory and reorder alert used by 8 volunteers.
+Template: https://example.com/jrivera/pantry-inventory
 
 ## Skills
 

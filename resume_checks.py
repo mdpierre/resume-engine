@@ -12,6 +12,7 @@ Checks implemented:
   * no text overflows the page margins
   * required sections (contact, experience, skills) present, in order, or,
     when the spec's resolved headings are given, exactly that order
+  * the PDF has a selectable text layer and carries every expected link
   * structure diff against a reference .docx (used for company-tailored builds)
 """
 
@@ -44,7 +45,12 @@ KNOWN_HEADINGS = [
     "PROJECTS",
     "SKILLS & TOOLS",
     "EDUCATION",
+    "TECHNICAL SKILLS",
+    "SELECTED TECHNICAL PROJECTS",
+    "PROFESSIONAL EXPERIENCE",
+    "LEADERSHIP & ACTIVITIES",
 ]
+MIN_TEXT_WORDS = 100  # fewer selectable words than this means an image-like PDF
 
 _SOFFICE_CANDIDATES = [
     os.environ.get("SOFFICE", ""),
@@ -61,6 +67,13 @@ _PDFTOTEXT_CANDIDATES = [
     "/usr/local/bin/pdftotext",
     "/usr/bin/pdftotext",
     "pdftotext",
+]
+_PDFINFO_CANDIDATES = [
+    os.environ.get("PDFINFO", ""),
+    "/opt/homebrew/bin/pdfinfo",
+    "/usr/local/bin/pdfinfo",
+    "/usr/bin/pdfinfo",
+    "pdfinfo",
 ]
 
 
@@ -86,6 +99,18 @@ def find_pdftotext() -> str:
             return candidate
     raise FileNotFoundError(
         "Poppler (pdftotext) not found. Install it (macOS: brew install poppler) or set PDFTOTEXT=/path/to/pdftotext"
+    )
+
+
+def find_pdfinfo() -> str:
+    """Locate Poppler's pdfinfo binary or raise a clear error."""
+    from shutil import which
+
+    for candidate in filter(None, _PDFINFO_CANDIDATES):
+        if Path(candidate).exists() or which(candidate):
+            return candidate
+    raise FileNotFoundError(
+        "Poppler (pdfinfo) not found. Install it (macOS: brew install poppler) or set PDFINFO=/path/to/pdfinfo"
     )
 
 
@@ -306,11 +331,14 @@ def check_section_order(pdf: Path, expected_headings: list[str] | None = None) -
                 missing.append(heading)
             else:
                 cursor += 1 + found
+        expected = {heading.upper() for heading in expected_headings}
+        unexpected = [heading for heading in detected if heading not in expected]
         return CheckResult(
             "section_order",
-            not missing,
+            not missing and not unexpected,
             f"expected contact then {expected_headings}; detected order: {detected}"
-            + (f"; missing or out of order: {missing}" if missing else ""),
+            + (f"; missing or out of order: {missing}" if missing else "")
+            + (f"; unexpected: {unexpected}" if unexpected else ""),
         )
     exp_line = _heading_line_index(lines, "EXPERIENCE")
     skills_line = _heading_line_index(lines, "SKILLS & TOOLS")
@@ -349,6 +377,39 @@ def detected_heading_order(text: str, extra_headings: list[str] | None = None) -
         (idx, h) for h in candidates if (idx := _heading_line_index(lines, h)) >= 0
     ]
     return [h for _, h in sorted(found)]
+
+
+def pdf_links(pdf: Path) -> set[str]:
+    """Clickable link targets in the PDF, from ``pdfinfo -url``."""
+    output = subprocess.run(
+        [find_pdfinfo(), "-url", str(pdf)],
+        capture_output=True,
+        text=True,
+        timeout=60,
+    ).stdout
+    return {
+        line.split()[-1]
+        for line in output.splitlines()
+        if line.split() and line.split()[0].isdigit()
+    }
+
+
+def check_links(pdf: Path, expected: list[str]) -> CheckResult:
+    missing = sorted(set(expected) - pdf_links(pdf))
+    return CheckResult(
+        "links",
+        not missing,
+        f"{len(expected)} link(s) present" if not missing else f"missing links: {missing}",
+    )
+
+
+def check_text_layer(pages: list[Page]) -> CheckResult:
+    words = sum(len(page.words) for page in pages)
+    return CheckResult(
+        "selectable_text",
+        words >= MIN_TEXT_WORDS,
+        f"{words} selectable words (minimum {MIN_TEXT_WORDS})",
+    )
 
 
 # --- Structure diff against a reference .docx ------------------------------
@@ -476,6 +537,7 @@ def evaluate(
     fill_max: float = FILL_MAX,
     min_body_pt: float = MIN_BODY_PT,
     expected_headings: list[str] | None = None,
+    expected_links: list[str] | None = None,
 ) -> Report:
     """Run every check against a rendered PDF (+ optional reference diff)."""
     pages = parse_bbox(pdf)
@@ -484,7 +546,10 @@ def evaluate(
         check_fill(pages, fill_min, fill_max),
         check_overflow(pages),
         check_section_order(pdf, expected_headings),
+        check_text_layer(pages),
     ]
+    if expected_links:
+        checks.append(check_links(pdf, expected_links))
     if generated_docx:
         checks.append(check_typography(generated_docx, min_body_pt))
     if reference_docx and generated_docx:

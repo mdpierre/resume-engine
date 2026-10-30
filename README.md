@@ -26,7 +26,7 @@ brew install --cask libreoffice
 brew install poppler
 ```
 
-On Linux, install `libreoffice` and `poppler-utils` with your package manager. If either one lives somewhere unusual, set `SOFFICE=/path/to/soffice` or `PDFTOTEXT=/path/to/pdftotext`.
+On Linux, install `libreoffice` and `poppler-utils` with your package manager. If either one lives somewhere unusual, set `SOFFICE=/path/to/soffice`, `PDFTOTEXT=/path/to/pdftotext`, or `PDFINFO=/path/to/pdfinfo`.
 
 Python 3.10+:
 
@@ -104,6 +104,7 @@ Optional look-and-feel, in `resume_facts.json` (or per spec):
 - No em or en dashes (use plain hyphens). They're a common tell of generated text and some ATS parsers mangle them.
 - Exactly one Letter page, 95-97% filled, nothing past the 0.5" margins, body text 10 pt or larger.
 - Contact first, then every section heading in the spec's resolved layout order (see [Section layout](#section-layout)).
+- A selectable text layer, and in the technical layout, every contact and project link clickable in the PDF.
 
 The rules the agent follows on top of that (real job titles only, no invented numbers or outcomes, a content budget that fits one page) are in `.claude/skills/tailor-resume/SKILL.md`.
 
@@ -154,6 +155,24 @@ That order leaves out `alignment` and `leadership`, which is allowed because the
 
 The build checks the rendered PDF against the resolved headings, so renamed and reordered sections pass the section-order check.
 
+## Technical layout
+
+Set `"layout": "technical"` for a resume that leads with projects: Education, Technical Skills, Selected Technical Projects, Professional Experience, Leadership & Activities. The header is left-aligned with no headline, there is no Profile or Role Alignment section, and email, LinkedIn, GitHub, and website are real hyperlinks. `example/specs/technical.json` is a complete spec.
+
+```bash
+.venv/bin/python resume.py --data example build technical
+```
+
+Technical specs can also use:
+
+- `projects_note`, with `projects_note_evidence`: a short italic line above the projects
+- on each project: `subtitle` (the stack), `description`, `bullets`, and `links` (`[{"label": "Code", "url": "https://..."}]`, https only)
+- `**text**` in a bullet to render it bold
+
+`section_order`, `section_titles`, and `sections` work the same way, using the five section IDs above (`education`, `skills`, `projects`, `experience`, `leadership`; `summary` and `alignment` aren't available). Without `section_order`, custom sections go last. The `font` style applies; `accent` doesn't, since this layout uses plain black headings and gray rules. `--reference` is ignored.
+
+The build also checks that every expected link is clickable in the PDF. These results, like the section-order check, are recorded under `checks` and `passed` in `resume-validation.json`; run the artifact test below to enforce them.
+
 ### Adding a section type
 
 1. In `resume_factory.py`, write a renderer `(doc, style, section)` that emits the heading with `_section(doc, style, section["title"])` and then the content. Reuse `_bullet`, `_skill_lines`, or `_render_items` where you can.
@@ -165,7 +184,7 @@ The build checks the rendered PDF against the resolved headings, so renamed and 
 ## Tests
 
 ```bash
-.venv/bin/python -m unittest -v tests/test_engine.py tests/test_sections.py
+.venv/bin/python -m unittest -v tests/test_engine.py tests/test_sections.py tests/test_technical.py
 RESUME_ARTIFACT_DIR="output/<dir>" .venv/bin/python -m unittest -v tests/test_engine.py
 ```
 
@@ -174,9 +193,9 @@ RESUME_ARTIFACT_DIR="output/<dir>" .venv/bin/python -m unittest -v tests/test_en
 | File | Role |
 |---|---|
 | `resume.py` | CLI: `init`, `validate`, `build` (the fit loop) |
-| `resume_factory.py` | Evidence validation and DOCX layout |
-| `resume_checks.py` | PDF geometry, page count, fill, overflow, section order |
-| `example/` | Fictional profile, facts, and specs (`base`, `education-first`) |
+| `resume_factory.py` | Evidence validation and DOCX layouts (`classic`, `technical`) |
+| `resume_checks.py` | PDF geometry, page count, fill, overflow, section order, links, text layer |
+| `example/` | Fictional profile, facts, and specs (`base`, `education-first`, `technical`) |
 | `docs/example-resume.png` | Render of the example |
 | `.claude/skills/` | `resume-setup` and `tailor-resume` agent workflows |
 | `AGENTS.md` | Instructions for any coding agent working in this repo |

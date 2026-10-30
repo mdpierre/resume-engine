@@ -20,6 +20,7 @@ Every path is relative to the repo root. If `data/resume_facts.json` doesn't exi
 - **Cite everything.** Summary (`summary_evidence`), every experience/leadership item and each of its bullets, each project, each skill line, each education entry.
 - **ASCII hyphens only.** No em or en dashes; the engine rejects them.
 - **One-page budget:** about 3 to 5 roles with 1 to 4 bullets each, at most 1 leadership item, 1 to 3 projects, 3 or 4 skill lines, and a summary of 3 lines or fewer. More than that usually won't fit.
+- For a technical role where projects should lead, set `"layout": "technical"` and start from `example/specs/technical.json` (no headline or summary; see "Technical layout" in README.md).
 - `alignment` (a one-line list of the posting's themes you can back up) is optional; drop it if space is tight.
 
 ### New facts

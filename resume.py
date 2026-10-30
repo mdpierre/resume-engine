@@ -25,7 +25,7 @@ from dataclasses import replace
 from pathlib import Path
 
 import resume_checks as rc
-from resume_factory import ResumeInputs, build_and_save, load_inputs, section_headings
+from resume_factory import ResumeInputs, build_and_save, expected_links, layout_of, load_inputs, section_headings
 
 ROOT = Path(__file__).resolve().parent
 EXAMPLE_DIR = ROOT / "example"
@@ -72,6 +72,7 @@ def search(inputs, work, reference, *, fill_min, fill_max, ideal, min_body_pt) -
     best: dict | None = None
     iteration = 0
     headings = section_headings(inputs.spec)
+    links = expected_links(inputs)
 
     for body_pt in body_sizes:
         lo, hi = 0.62, 1.65
@@ -94,6 +95,7 @@ def search(inputs, work, reference, *, fill_min, fill_max, ideal, min_body_pt) -
                 fill_max=fill_max,
                 min_body_pt=min_body_pt,
                 expected_headings=headings,
+                expected_links=links,
             )
             score = rc.overflow_score(rc.parse_bbox(pdf))
             ok = _geometry_ok(report)
@@ -158,7 +160,8 @@ def cmd_build(args) -> int:
     inputs = load_inputs(spec, args.facts or args.data / "resume_facts.json")
     if args.hide_phone:
         inputs.spec["hide_phone"] = True
-    reference = args.reference if args.reference and args.reference.exists() else None
+    classic = not layout_of(inputs.spec).technical
+    reference = args.reference if classic and args.reference and args.reference.exists() else None
     slug = slugify(f'{inputs.spec["company"]}-{inputs.spec["role"]}')
     output_dir = (args.output_dir or ROOT / "output" / f"{dt.date.today():%Y-%m-%d}-{slug}").resolve()
 
@@ -189,6 +192,9 @@ def cmd_build(args) -> int:
     payload = {
         "company": inputs.spec["company"],
         "role": inputs.spec["role"],
+        "layout": inputs.spec.get("layout", "classic"),
+        "expected_headings": section_headings(inputs.spec),
+        "expected_links": expected_links(inputs),
         "source_spec": str(inputs.spec_path),
         "source_facts": str(inputs.facts_path),
         "canonical_profile": str(inputs.profile_path),
@@ -230,7 +236,7 @@ def main() -> int:
     p_build.add_argument("spec")
     p_build.add_argument("--facts", type=Path)
     p_build.add_argument("--output-dir", type=Path)
-    p_build.add_argument("--reference", type=Path, help="optional .docx whose section order/format must be matched")
+    p_build.add_argument("--reference", type=Path, help="optional .docx whose section order/format must be matched (classic layout only)")
     p_build.add_argument("--target-min", type=float, default=0.95)
     p_build.add_argument("--target-max", type=float, default=0.97)
     p_build.add_argument("--ideal", type=float, default=0.96)

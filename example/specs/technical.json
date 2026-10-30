@@ -1,0 +1,259 @@
+{
+  "layout": "technical",
+  "company": "Technical",
+  "role": "Data Operations Analyst",
+  "acronym": "DOA",
+  "projects_note": "Personal and volunteer projects.",
+  "projects_note_evidence": [
+    "project.transit_tracker",
+    "project.food_pantry"
+  ],
+  "education": [
+    {
+      "degree": "BS, Information and Decision Sciences",
+      "school": "University of Illinois Chicago",
+      "location": "Chicago, IL",
+      "date": "May 2021",
+      "detail": "Minor: Statistics | Coursework: Database Management, Business Analytics, Supply Chain Operations",
+      "evidence": [
+        "education.uic_bs",
+        "education.uic_minor_coursework"
+      ]
+    }
+  ],
+  "skills": [
+    {
+      "label": "Data",
+      "items": "SQL, Excel (pivot tables, XLOOKUP, Power Query), Looker, Tableau, Python (pandas)",
+      "evidence": [
+        "skills.data"
+      ]
+    },
+    {
+      "label": "Operations",
+      "items": "process mapping, SOP writing, KPI reporting, vendor coordination, training",
+      "evidence": [
+        "skills.operations"
+      ]
+    },
+    {
+      "label": "Tools",
+      "items": "Zendesk, Jira, Asana, Google Workspace, Microsoft 365, Slack",
+      "evidence": [
+        "skills.tools"
+      ]
+    },
+    {
+      "label": "Certifications",
+      "items": "Google Data Analytics Professional Certificate (2022), Lean Six Sigma Yellow Belt (2023)",
+      "evidence": [
+        "skills.certifications"
+      ]
+    }
+  ],
+  "projects": [
+    {
+      "title": "Transit Delay Tracker",
+      "subtitle": "Python, pandas, SQLite, Streamlit",
+      "description": "Personal project that charts train delay patterns from live arrival data.",
+      "links": [
+        {
+          "label": "Code",
+          "url": "https://example.com/jrivera/transit-delay-tracker"
+        }
+      ],
+      "evidence": [
+        "project.transit_tracker"
+      ],
+      "bullets": [
+        {
+          "text": "Pulls CTA train arrival data **every five minutes** and stores it in SQLite.",
+          "evidence": [
+            "project.transit_tracker"
+          ]
+        },
+        {
+          "text": "Charts delay patterns **by line and hour** in a Streamlit dashboard.",
+          "evidence": [
+            "project.transit_tracker"
+          ]
+        },
+        {
+          "text": "Written in **Python**, with **pandas** for analysis.",
+          "evidence": [
+            "project.transit_tracker"
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Food Pantry Inventory Sheet",
+      "subtitle": "Google Sheets",
+      "description": "Volunteer project that replaced a paper intake log at a neighborhood food pantry.",
+      "links": [
+        {
+          "label": "Template",
+          "url": "https://example.com/jrivera/pantry-inventory"
+        }
+      ],
+      "evidence": [
+        "project.food_pantry"
+      ],
+      "bullets": [
+        {
+          "text": "Built a **Google Sheets** inventory used by **8 volunteers**.",
+          "evidence": [
+            "project.food_pantry"
+          ]
+        },
+        {
+          "text": "Added a reorder alert to the sheet.",
+          "evidence": [
+            "project.food_pantry"
+          ]
+        }
+      ]
+    }
+  ],
+  "experience": [
+    {
+      "title": "Operations Analyst",
+      "organization": "Lakeshore Freight Co.",
+      "location": "Chicago, IL",
+      "dates": "Jun 2023 - Present",
+      "evidence": [
+        "experience.lakeshore_dashboard"
+      ],
+      "bullets": [
+        {
+          "text": "Rebuilt the weekly carrier-performance report from four manual spreadsheets into one SQL-backed Looker dashboard, cutting prep time from about 6 hours to under 1 hour a week.",
+          "evidence": [
+            "experience.lakeshore_dashboard"
+          ]
+        },
+        {
+          "text": "Mapped the damaged-shipment claims process with customer service and finance, reducing average claim resolution from 14 days to 9.",
+          "evidence": [
+            "experience.lakeshore_claims"
+          ]
+        },
+        {
+          "text": "Own data quality checks for 2,000+ weekly shipments and flag anomalies to dispatch leads.",
+          "evidence": [
+            "experience.lakeshore_data_quality"
+          ]
+        },
+        {
+          "text": "Run weekly performance reviews with 8 regional carriers using the new dashboard.",
+          "evidence": [
+            "experience.lakeshore_carrier_reviews"
+          ]
+        },
+        {
+          "text": "Trained 12 dispatchers on the new dashboard and wrote the internal how-to guide.",
+          "evidence": [
+            "experience.lakeshore_training"
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Customer Operations Associate",
+      "organization": "BrightCart",
+      "location": "Remote",
+      "dates": "Aug 2021 - May 2023",
+      "evidence": [
+        "experience.brightcart_tickets"
+      ],
+      "bullets": [
+        {
+          "text": "Resolved 60+ Zendesk tickets a day across orders, billing, and delivery with CSAT above 94%.",
+          "evidence": [
+            "experience.brightcart_tickets"
+          ]
+        },
+        {
+          "text": "Built a library of 40+ saved-reply macros that the team adopted as its standard.",
+          "evidence": [
+            "experience.brightcart_macros"
+          ]
+        },
+        {
+          "text": "Tagged ticket drivers monthly; the top-three driver report fed product roadmap reviews.",
+          "evidence": [
+            "experience.brightcart_drivers"
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Student Operations Assistant",
+      "organization": "University of Illinois Chicago Library",
+      "location": "Chicago, IL",
+      "dates": "Sep 2019 - May 2021",
+      "evidence": [
+        "experience.uic_scheduling"
+      ],
+      "bullets": [
+        {
+          "text": "Scheduled 15 student workers across three service desks each semester.",
+          "evidence": [
+            "experience.uic_scheduling"
+          ]
+        },
+        {
+          "text": "Tracked loans for 300+ laptops and hotspots during remote learning.",
+          "evidence": [
+            "experience.uic_equipment"
+          ]
+        }
+      ]
+    }
+  ],
+  "leadership": [
+    {
+      "title": "Treasurer",
+      "organization": "UIC Data Science Club",
+      "location": "Chicago, IL",
+      "dates": "Aug 2020 - May 2021",
+      "evidence": [
+        "leadership.dsc_treasurer"
+      ],
+      "bullets": [
+        {
+          "text": "Managed a **$12K** annual budget for the club.",
+          "evidence": [
+            "leadership.dsc_treasurer"
+          ]
+        },
+        {
+          "text": "Ran reimbursement for **20+ events**.",
+          "evidence": [
+            "leadership.dsc_treasurer"
+          ]
+        }
+      ]
+    }
+  ],
+  "sections": [
+    {
+      "id": "results",
+      "title": "Selected Results",
+      "type": "bullets",
+      "items": [
+        {
+          "text": "Cut weekly report prep from about **6 hours** to under **1 hour** with a SQL-backed Looker dashboard.",
+          "evidence": [
+            "experience.lakeshore_dashboard"
+          ]
+        },
+        {
+          "text": "Shortened average claim resolution from **14 days** to **9** by mapping the process across teams.",
+          "evidence": [
+            "experience.lakeshore_claims"
+          ]
+        }
+      ]
+    }
+  ]
+}
