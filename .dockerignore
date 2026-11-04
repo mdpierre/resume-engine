@@ -1,0 +1,7 @@
+.git
+.venv
+.claude/worktrees
+__pycache__
+data
+output
+*.pyc
