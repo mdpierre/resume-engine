@@ -110,7 +110,7 @@ The rules the agent follows on top of that (real job titles only, no invented nu
 
 ## Section layout
 
-By default a resume renders Profile, Role Alignment, Experience, Leadership, Projects, Skills & Tools, Education, and skips any optional section (alignment, leadership, projects, skills) the spec leaves empty. Three optional spec fields change that.
+By default a resume renders Profile, Role Alignment, Experience, Leadership, Projects, Skills & Tools, Education, and skips any optional section (alignment, leadership, projects, skills) the spec leaves empty. Three optional spec fields change that. The example `base` spec leaves out Profile and Role Alignment through its own `section_order`; `example/specs/full-sections.json` keeps every section and is what the tests use.
 
 **`section_order`** lists section IDs top to bottom. Built-in IDs: `summary`, `alignment`, `experience`, `leadership`, `projects`, `skills`, `education`. An explicit order must include `experience`, `education`, every custom section, and `skills` if the spec has a nonempty `skills` block. Unknown or duplicate IDs fail validation. You can leave `summary` out, and then the spec doesn't need `summary` or `summary_evidence`. Without `section_order`, custom sections go after skills and before education.
 

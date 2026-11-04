@@ -11,7 +11,7 @@ Every path is relative to the repo root. If `data/resume_facts.json` doesn't exi
 
 1. **Read only** the job description, `data/resume_facts.json`, and the closest existing spec in `data/specs/` (start from `base.json` if it's the only one). Open `data/PROFILE.md` only when a fact note doesn't carry enough wording, or to check a claim boundary. If PROFILE.md has a section on how the person's work may be described (for example "say directed, not engineered"), follow it.
 2. **Map keywords to facts.** For each important keyword or requirement in the posting, find a supporting fact ID or mark it **unsupported**. Never cover an unsupported keyword with vague wording; list it for the user instead.
-3. **Write** `data/specs/<company>-<role>.json` (slugified) by copying the closest spec and changing the company, role, acronym, headline, summary, alignment, order, and which bullets appear.
+3. **Write** `data/specs/<company>-<role>.json` (slugified) by copying the closest spec and changing the company, role, acronym, headline, order, and which bullets appear.
 
 ### Spec rules
 
@@ -19,7 +19,8 @@ Every path is relative to the repo root. If `data/resume_facts.json` doesn't exi
 - **No invented outcomes.** Reword and reorder facts, but don't add results, numbers, scope, or actions a fact doesn't support. "Which reduced churn", "ensuring no downtime", or "escalated to the right team" are all additions unless a fact says so.
 - **Cite everything.** Summary (`summary_evidence`), every experience/leadership item and each of its bullets, each project, each skill line, each education entry.
 - **ASCII hyphens only.** No em or en dashes; the engine rejects them.
-- **One-page budget:** about 3 to 5 roles with 1 to 4 bullets each, at most 1 leadership item, 1 to 3 projects, 3 or 4 skill lines, and a summary of 3 lines or fewer. More than that usually won't fit.
+- **One-page budget:** about 3 roles with 2 to 3 bullets each, at most 1 leadership item, 1 to 3 projects, 3 or 4 skill lines. A base resume has no summary or alignment section unless the user asks for one. More than that usually won't fit.
+- **Bullet style:** write each bullet as one full sentence of about 30 to 50 words (2 to 3 lines): what the person did, how, and the outcome. Group related facts into one bullet and cite every fact ID it uses. Depth comes from the facts' own context, action and result. Connecting words are fine, but never add outcomes, numbers or scope a fact doesn't support.
 - For a technical role where projects should lead, set `"layout": "technical"` and start from `example/specs/technical.json` (no headline or summary; see "Technical layout" in README.md).
 - `alignment` (a one-line list of the posting's themes you can back up) is optional; drop it if space is tight.
 
@@ -46,7 +47,7 @@ Read `qa/pt-1.png` and check for one page, no clipped or overlapping text, align
 ## 3. Fix loop
 
 - **"No readable one-page layout"** with pages > 1: too much content. Cut the least relevant bullet or role, not the font size.
-- Same error with low fill: too little. Add a relevant bullet or project.
+- Same error with low fill: too little. First lengthen a thin bullet using more of its facts' context, then add a bullet or project.
 - **Evidence or dash errors:** fix the spec and rebuild.
 - **Visual problems** like an orphaned word: tighten that bullet's wording and rebuild. Only for real problems.
 
