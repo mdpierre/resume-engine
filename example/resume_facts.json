@@ -84,6 +84,10 @@
     "skills.certifications": {
       "source": "PROFILE.md#Skills",
       "note": "Google Data Analytics Professional Certificate (2022), Lean Six Sigma Yellow Belt (2023)"
+    },
+    "experience.lakeshore_metric_glossary": {
+      "source": "PROFILE.md#Experience",
+      "note": "Wrote a one-page metric glossary and shared SQL views so finance and dispatch report the same on-time delivery numbers"
     }
   }
 }

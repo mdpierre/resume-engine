@@ -27,7 +27,7 @@ from resume_factory import (  # noqa: E402
 
 EXAMPLE = ROOT / "example"
 FACTS = EXAMPLE / "resume_facts.json"
-SPEC = EXAMPLE / "specs" / "base.json"
+SPEC = EXAMPLE / "specs" / "full-sections.json"
 DEFAULT_HEADINGS = ["PROFILE", "ROLE ALIGNMENT", "EXPERIENCE", "LEADERSHIP", "PROJECTS", "SKILLS & TOOLS", "EDUCATION"]
 
 

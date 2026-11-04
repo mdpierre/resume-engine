@@ -32,6 +32,8 @@ teams and technical stakeholders.
   dispatch leads.
 - Trained 12 dispatchers on the new dashboard and wrote the internal how-to.
 - Runs weekly performance reviews with 8 regional carriers using the dashboard.
+- Wrote a one-page metric glossary and shared SQL views so finance and
+  dispatch report the same on-time delivery numbers.
 
 ### Customer Operations Associate - BrightCart (Remote) - Aug 2021 - May 2023
 

@@ -197,7 +197,7 @@ RESUME_ARTIFACT_DIR="output/<dir>" .venv/bin/python -m unittest -v tests/test_en
 | `resume.py` | CLI: `init`, `validate`, `build` (the fit loop) |
 | `resume_factory.py` | Evidence validation and DOCX layouts (`classic`, `technical`) |
 | `resume_checks.py` | PDF geometry, page count, fill, overflow, section order, links, text layer |
-| `example/` | Fictional profile, facts, and specs (`base`, `education-first`, `technical`) |
+| `example/` | Fictional profile, facts, and specs (`base`, `education-first`, `technical`, `full-sections` (test fixture)) |
 | `docs/example-resume.png`, `docs/example-resume-technical.png` | Renders of the example (classic and technical layouts) |
 | `.claude/skills/` | `resume-setup` and `tailor-resume` agent workflows |
 | `AGENTS.md` | Instructions for any coding agent working in this repo |

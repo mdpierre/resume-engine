@@ -3,18 +3,12 @@
   "role": "Operations Analyst",
   "acronym": "OA",
   "headline": "Operations Analyst | Reporting and Dashboards | Process Improvement",
-  "summary": "Operations analyst who turns manual spreadsheets and handoffs into reliable reporting and workflow systems. Built a SQL-backed dashboard that cut weekly report prep from about 6 hours to under 1, and shortened claim resolution from 14 to 9 days by mapping the process across teams. Comfortable translating between frontline teams and technical stakeholders.",
-  "summary_evidence": [
-    "positioning.ops_analyst",
-    "experience.lakeshore_dashboard",
-    "experience.lakeshore_claims"
-  ],
-  "alignment": [
-    "KPI reporting",
-    "SQL and dashboards",
-    "Process mapping",
-    "Cross-team coordination",
-    "Training and SOPs"
+  "section_order": [
+    "experience",
+    "leadership",
+    "projects",
+    "skills",
+    "education"
   ],
   "experience": [
     {
@@ -23,7 +17,8 @@
       "location": "Chicago, IL",
       "dates": "Jun 2023 - Present",
       "evidence": [
-        "experience.lakeshore_dashboard"
+        "experience.lakeshore_dashboard",
+        "experience.lakeshore_metric_glossary"
       ],
       "bullets": [
         {
@@ -39,7 +34,13 @@
           ]
         },
         {
-          "text": "Own data quality checks for 2,000+ weekly shipments and flag anomalies to dispatch leads.",
+          "text": "Own data quality checks for 2,000+ weekly shipments.",
+          "evidence": [
+            "experience.lakeshore_data_quality"
+          ]
+        },
+        {
+          "text": "Flag shipment data anomalies to dispatch leads.",
           "evidence": [
             "experience.lakeshore_data_quality"
           ]
@@ -51,9 +52,21 @@
           ]
         },
         {
-          "text": "Trained 12 dispatchers on the new dashboard and wrote the internal how-to guide.",
+          "text": "Trained 12 dispatchers on the new dashboard.",
           "evidence": [
             "experience.lakeshore_training"
+          ]
+        },
+        {
+          "text": "Wrote the internal how-to guide dispatchers use for the dashboard.",
+          "evidence": [
+            "experience.lakeshore_training"
+          ]
+        },
+        {
+          "text": "Wrote a one-page metric glossary and shared SQL views so finance and dispatch report the same on-time delivery numbers.",
+          "evidence": [
+            "experience.lakeshore_metric_glossary"
           ]
         }
       ]
@@ -68,7 +81,13 @@
       ],
       "bullets": [
         {
-          "text": "Resolved 60+ Zendesk tickets a day across orders, billing, and delivery with CSAT above 94%.",
+          "text": "Handled 60+ customer tickets a day in Zendesk across order, billing, and delivery issues.",
+          "evidence": [
+            "experience.brightcart_tickets"
+          ]
+        },
+        {
+          "text": "Kept CSAT above 94% while working that daily ticket volume.",
           "evidence": [
             "experience.brightcart_tickets"
           ]
@@ -80,7 +99,13 @@
           ]
         },
         {
-          "text": "Tagged ticket drivers monthly; the top-three driver report fed product roadmap reviews.",
+          "text": "Tagged and categorized ticket drivers every month.",
+          "evidence": [
+            "experience.brightcart_drivers"
+          ]
+        },
+        {
+          "text": "The monthly top-three driver report fed product roadmap reviews.",
           "evidence": [
             "experience.brightcart_drivers"
           ]
@@ -150,8 +175,22 @@
   ],
   "skills": [
     {
+      "label": "Strengths",
+      "items": "logistics and customer operations, dashboard design, translating between frontline teams and technical stakeholders",
+      "evidence": [
+        "positioning.ops_analyst"
+      ]
+    },
+    {
       "label": "Data",
-      "items": "SQL, Excel (pivot tables, XLOOKUP, Power Query), Looker, Tableau, Python (pandas)",
+      "items": "SQL, Looker, Tableau, Python (pandas)",
+      "evidence": [
+        "skills.data"
+      ]
+    },
+    {
+      "label": "Excel",
+      "items": "pivot tables, XLOOKUP, Power Query",
       "evidence": [
         "skills.data"
       ]
