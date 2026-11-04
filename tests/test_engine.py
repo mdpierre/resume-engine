@@ -22,7 +22,7 @@ from resume_factory import Style, build_and_save, load_inputs, profile_contact  
 
 EXAMPLE = ROOT / "example"
 FACTS = EXAMPLE / "resume_facts.json"
-SPEC = EXAMPLE / "specs" / "base.json"
+SPEC = EXAMPLE / "specs" / "full-sections.json"
 
 
 def _write(tmp: str, name: str, data) -> Path:

@@ -40,6 +40,7 @@ Shape: see `example/resume_facts.json`.
 - One fact per distinct claim you might want to cite on its own: usually one per bullet, one per skill line, one per degree, one per project, and one for the positioning summary if there is one.
 - IDs: `<section>.<org_or_topic>_<short_claim>`, lowercase, e.g. `experience.acme_dashboard`, `skills.data`, `education.uic_bs`.
 - `source`: `PROFILE.md#<Section>`. `note`: a compressed version of the claim with its numbers, so a later agent can pick facts without re-reading the profile.
+- Make each `note` rich enough to write a 30 to 50 word bullet from: what was done, the context or method, and the result with its numbers. Ask the user for missing context instead of guessing it.
 - Leave out the `person` block (contact info is read straight from PROFILE.md).
 
 ## 5. Write `data/specs/base.json`
