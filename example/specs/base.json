@@ -18,55 +18,32 @@
       "dates": "Jun 2023 - Present",
       "evidence": [
         "experience.lakeshore_dashboard",
+        "experience.lakeshore_claims",
+        "experience.lakeshore_data_quality",
+        "experience.lakeshore_carrier_reviews",
+        "experience.lakeshore_training",
         "experience.lakeshore_metric_glossary"
       ],
       "bullets": [
         {
-          "text": "Rebuilt the weekly carrier-performance report from four manual spreadsheets into one SQL-backed Looker dashboard, cutting prep time from about 6 hours to under 1 hour a week.",
+          "text": "Rebuilt the weekly carrier-performance report from four manual spreadsheets into a single SQL-backed Looker dashboard, cutting preparation from about 6 hours to under 1 hour a week, then used it to run weekly performance reviews with 8 regional carriers.",
           "evidence": [
-            "experience.lakeshore_dashboard"
-          ]
-        },
-        {
-          "text": "Mapped the damaged-shipment claims process with customer service and finance, reducing average claim resolution from 14 days to 9.",
-          "evidence": [
-            "experience.lakeshore_claims"
-          ]
-        },
-        {
-          "text": "Own data quality checks for 2,000+ weekly shipments.",
-          "evidence": [
-            "experience.lakeshore_data_quality"
-          ]
-        },
-        {
-          "text": "Flag shipment data anomalies to dispatch leads.",
-          "evidence": [
-            "experience.lakeshore_data_quality"
-          ]
-        },
-        {
-          "text": "Run weekly performance reviews with 8 regional carriers using the new dashboard.",
-          "evidence": [
+            "experience.lakeshore_dashboard",
             "experience.lakeshore_carrier_reviews"
           ]
         },
         {
-          "text": "Trained 12 dispatchers on the new dashboard.",
+          "text": "Mapped the damaged-shipment claims process end to end with customer service and finance, which shortened average claim resolution from 14 days to 9, and wrote a one-page metric glossary with shared SQL views so finance and dispatch report the same on-time delivery numbers.",
           "evidence": [
-            "experience.lakeshore_training"
-          ]
-        },
-        {
-          "text": "Wrote the internal how-to guide dispatchers use for the dashboard.",
-          "evidence": [
-            "experience.lakeshore_training"
-          ]
-        },
-        {
-          "text": "Wrote a one-page metric glossary and shared SQL views so finance and dispatch report the same on-time delivery numbers.",
-          "evidence": [
+            "experience.lakeshore_claims",
             "experience.lakeshore_metric_glossary"
+          ]
+        },
+        {
+          "text": "Own data quality checks across 2,000+ weekly shipments and flag anomalies to dispatch leads, and trained 12 dispatchers on the new dashboard with an internal how-to guide they use to answer their own reporting questions.",
+          "evidence": [
+            "experience.lakeshore_data_quality",
+            "experience.lakeshore_training"
           ]
         }
       ]
@@ -77,36 +54,21 @@
       "location": "Remote",
       "dates": "Aug 2021 - May 2023",
       "evidence": [
-        "experience.brightcart_tickets"
+        "experience.brightcart_tickets",
+        "experience.brightcart_macros",
+        "experience.brightcart_drivers"
       ],
       "bullets": [
         {
-          "text": "Handled 60+ customer tickets a day in Zendesk across order, billing, and delivery issues.",
+          "text": "Handled 60+ customer tickets a day in Zendesk across order, billing, and delivery issues while keeping customer satisfaction above 94%, balancing speed against the care each type of issue needed.",
           "evidence": [
             "experience.brightcart_tickets"
           ]
         },
         {
-          "text": "Kept CSAT above 94% while working that daily ticket volume.",
+          "text": "Built a library of 40+ saved-reply macros that the team adopted as its standard, and tagged ticket drivers every month so the top-three driver report could feed product roadmap reviews.",
           "evidence": [
-            "experience.brightcart_tickets"
-          ]
-        },
-        {
-          "text": "Built a library of 40+ saved-reply macros that the team adopted as its standard.",
-          "evidence": [
-            "experience.brightcart_macros"
-          ]
-        },
-        {
-          "text": "Tagged and categorized ticket drivers every month.",
-          "evidence": [
-            "experience.brightcart_drivers"
-          ]
-        },
-        {
-          "text": "The monthly top-three driver report fed product roadmap reviews.",
-          "evidence": [
+            "experience.brightcart_macros",
             "experience.brightcart_drivers"
           ]
         }
@@ -118,17 +80,18 @@
       "location": "Chicago, IL",
       "dates": "Sep 2019 - May 2021",
       "evidence": [
-        "experience.uic_scheduling"
+        "experience.uic_scheduling",
+        "experience.uic_equipment"
       ],
       "bullets": [
         {
-          "text": "Scheduled 15 student workers across three service desks each semester.",
+          "text": "Scheduled 15 student workers across three service desks each semester, building coverage that kept every desk staffed through the semester's busiest and quietest stretches.",
           "evidence": [
             "experience.uic_scheduling"
           ]
         },
         {
-          "text": "Tracked loans for 300+ laptops and hotspots during remote learning.",
+          "text": "Tracked loans for 300+ laptops and hotspots during remote learning, keeping a clear record of what was out and with whom so students could keep borrowing equipment.",
           "evidence": [
             "experience.uic_equipment"
           ]
@@ -147,7 +110,7 @@
       ],
       "bullets": [
         {
-          "text": "Managed a $12K annual budget and ran reimbursement for 20+ events.",
+          "text": "Managed a $12K annual budget for the club and ran the reimbursement process for 20+ events, keeping spending organized and members paid back promptly.",
           "evidence": [
             "leadership.dsc_treasurer"
           ]
