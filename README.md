@@ -159,6 +159,8 @@ The build checks the rendered PDF against the resolved headings, so renamed and 
 
 Set `"layout": "technical"` for a resume that leads with projects: Education, Technical Skills, Selected Technical Projects, Professional Experience, Leadership & Activities. The header is left-aligned with no headline, there is no Profile or Role Alignment section, and email, LinkedIn, GitHub, and website are real hyperlinks. `example/specs/technical.json` is a complete spec.
 
+<img src="docs/example-resume-technical.png" alt="Example one-page technical-layout resume generated from the fictional Jordan Rivera profile" width="600">
+
 ```bash
 .venv/bin/python resume.py --data example build technical
 ```
@@ -196,7 +198,7 @@ RESUME_ARTIFACT_DIR="output/<dir>" .venv/bin/python -m unittest -v tests/test_en
 | `resume_factory.py` | Evidence validation and DOCX layouts (`classic`, `technical`) |
 | `resume_checks.py` | PDF geometry, page count, fill, overflow, section order, links, text layer |
 | `example/` | Fictional profile, facts, and specs (`base`, `education-first`, `technical`) |
-| `docs/example-resume.png` | Render of the example |
+| `docs/example-resume.png`, `docs/example-resume-technical.png` | Renders of the example (classic and technical layouts) |
 | `.claude/skills/` | `resume-setup` and `tailor-resume` agent workflows |
 | `AGENTS.md` | Instructions for any coding agent working in this repo |
 
