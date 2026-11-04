@@ -183,6 +183,10 @@ The build also checks that every expected link is clickable in the PDF. These re
 4. If items can hold nested lists of cited things, make sure `_all_evidence_ids` collects them, so unknown IDs are rejected.
 5. Add coverage to `tests/test_sections.py`.
 
+## Telegram bot
+
+The same engine can run as a Telegram bot for people who won't install anything. You upload a resume, paste a job post, and get back a PDF and a DOCX. `pipeline.py` runs that whole flow from the command line, and `telegram_bot.py` wraps it for Telegram. Neither one changes the engine. For the Railway setup, environment variables, and limits, see [DEPLOY.md](DEPLOY.md).
+
 ## Tests
 
 ```bash
@@ -197,6 +201,8 @@ RESUME_ARTIFACT_DIR="output/<dir>" .venv/bin/python -m unittest -v tests/test_en
 | `resume.py` | CLI: `init`, `validate`, `build` (the fit loop) |
 | `resume_factory.py` | Evidence validation and DOCX layouts (`classic`, `technical`) |
 | `resume_checks.py` | PDF geometry, page count, fill, overflow, section order, links, text layer |
+| `claude_adapter.py`, `pipeline.py` | Claude API adapter (prompts built from the skills) and the one-job pipeline, runnable as a CLI |
+| `telegram_bot.py`, `Dockerfile`, `railway.json` | Telegram bot and Railway deploy files ([DEPLOY.md](DEPLOY.md)) |
 | `example/` | Fictional profile, facts, and specs (`base`, `education-first`, `technical`) |
 | `docs/example-resume.png`, `docs/example-resume-technical.png` | Renders of the example (classic and technical layouts) |
 | `.claude/skills/` | `resume-setup` and `tailor-resume` agent workflows |

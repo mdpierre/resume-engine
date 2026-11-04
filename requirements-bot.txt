@@ -1,0 +1,4 @@
+# Engine deps plus the Telegram bot and the Claude API adapter.
+-r requirements.txt
+anthropic==2.4.0
+python-telegram-bot[job-queue]==22.8
